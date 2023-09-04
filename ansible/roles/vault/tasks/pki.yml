@@ -1,0 +1,67 @@
+---
+- name: delete path
+  file:
+    state: absent
+    path: "{{ vault_path }}"
+
+- name: create path
+  file:
+    state: directory
+    path: "{{ vault_path }}"
+
+- name: remove token cache
+  file:
+    state: absent
+    path: $HOME/.vault-token
+
+- name: run vault
+  systemd:
+    name: vault
+    state: started
+  become: yes
+
+- name: restart vault
+  systemd:
+    name: vault
+    state: restarted
+  become: yes
+
+- name: set fact
+  set_fact:
+    vault_env:
+      VAULT_TOKEN:  "{{ vault_token }}"
+      VAULT_ADDR:   "http://127.0.0.1:8200"
+
+- name: prepare pki
+  shell: "{{ item }}"
+  loop:
+    - vault secrets enable pki
+    - vault secrets tune -max-lease-ttl=87600h -default-lease-ttl=87600h pki/
+    - "vault write -format=json pki/root/generate/exported common_name=ca ttl=87600h > {{ vault_path }}/ca.json"
+    - "cat {{ vault_path }}/ca.json | jq -r '.data.certificate' | openssl x509 > {{ vault_path }}/ca.crt"
+    - "cat {{ vault_path }}/ca.json | jq -r '.data.private_key' | openssl pkcs8 -topk8 -nocrypt > {{ vault_path }}/ca.key"
+    - "vault write pki/config/urls issuing_certificates=\"http://127.0.0.1:8200/v1/pki/ca\" crl_distribution_points=\"http://127.0.0.1:8200/v1/pki/crl\""
+    - "vault write pki/roles/elk allow_any_name=true max_ttl=43800h"
+  environment: "{{ vault_env }}"
+
+- name: create certificates
+  shell: "vault write -format=json pki/issue/elk common_name={{ item }} ip_sans=\"{{ hostvars[item]['external_ip'] }},{{ hostvars[item]['internal_ip'] }}\" ttl=43800h > {{ vault_path }}/{{ item }}.json"
+  loop: "{{ groups['all'] }}"
+  environment: "{{ vault_env }}"
+
+- name: export certificate
+  shell: "cat {{ vault_path }}/{{ item }}.json | jq -r '.data.certificate' | openssl x509 > {{ vault_path }}/{{ item }}.crt"
+  loop: "{{ groups['all'] }}"
+  environment: "{{ vault_env }}"
+
+- name: export key
+  shell: "cat {{ vault_path }}/{{ item }}.json | jq -r '.data.private_key' | openssl pkcs8 -topk8 -nocrypt > {{ vault_path }}/{{ item }}.key"
+  loop: "{{ groups['all'] }}"
+  environment: "{{ vault_env }}"
+
+- name: stop vault
+  systemd:
+    name: vault
+    state: stopped
+  become: yes
+...

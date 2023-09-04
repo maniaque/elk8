@@ -1,0 +1,8 @@
+[Unit]
+Description=Vault in development mode
+
+[Service]
+ExecStart=/usr/local/bin/vault server -dev -dev-root-token-id={{ vault_token }}
+
+[Install]
+WantedBy=multi-user.target

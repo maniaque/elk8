@@ -1,0 +1,17 @@
+---
+- name: create config
+  template:
+    src: "templates/{{ elasticsearch_config_template }}.j2"
+    dest: "{{ elasticsearch_directory }}/es.yml"
+  vars:
+    template_cluster_name: "{{ elasticsearch_cluster_name }}"
+    template_node_name: "{{ inventory_hostname }}"
+    template_nodes: "{{ elasticsearch_nodes }}"
+  # notify: restart elasticsearch
+
+- name: create config
+  template:
+    src: "templates/docker-compose.yml.j2"
+    dest: "{{ elasticsearch_directory }}/docker-compose.yml"
+  # notify: restart elasticsearch
+...

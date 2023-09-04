@@ -1,0 +1,29 @@
+---
+- name: disable swap
+  shell: swapoff -a
+
+- name: disable swap in /etc/fstab
+  shell: sed -i 's/\(.*swap.*\)/#\1/g' /etc/fstab
+
+- name: sysctl
+  copy:
+    dest: /etc/sysctl.d/90-es.conf
+    content: |
+      vm.max_map_count=262144
+  notify: apply sysctl
+
+- name: force handler right now
+  meta: flush_handlers
+
+- name: create directory
+  file:
+    state: directory
+    path: "{{ elasticsearch_directory }}"
+
+- name: create directory (data)
+  file:
+    state: directory
+    path: "{{ elasticsearch_directory_data }}"
+    owner: '1000'
+    group: '1000'
+...

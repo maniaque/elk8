@@ -1,0 +1,18 @@
+- name: generate certs
+  gather_facts: yes
+  hosts: localhost
+
+  tasks:
+    - name: install vault
+      include_role:
+        name: vault
+        tasks_from: install.yml
+        apply:
+          become: yes
+
+    - name: generate certs
+      include_role:
+        name: vault
+        tasks_from: pki.yml
+      vars:
+        vault_path: ../../keys

@@ -1,0 +1,26 @@
+---
+- name: create directory
+  file:
+    state: directory
+    path: "{{ kibana_directory }}"
+
+- name: render docker-compose
+  template:
+    src: templates/docker-compose.yml.j2
+    dest: "{{ kibana_directory }}/docker-compose.yml"
+  notify: restart kibana
+
+- name: render kibana.yml
+  template:
+    src: templates/kibana.yml.j2
+    dest: "{{ kibana_directory }}/kibana.yml"
+  vars:
+    template_hosts: "{{ kibana_elasticsearch_urls }}"
+    template_token: "{{ kibana_token }}"
+  notify: restart kibana
+
+- name: start kibana
+  shell:
+    cmd: docker-compose up -d
+    chdir: "{{ kibana_directory }}"
+...

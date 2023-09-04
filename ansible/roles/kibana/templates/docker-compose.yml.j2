@@ -1,0 +1,7 @@
+services:
+  kibana:
+    image: {{ kibana_image }}
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - {{ kibana_directory }}/kibana.yml:/usr/share/kibana/config/kibana.yml:ro

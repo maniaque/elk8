@@ -1,0 +1,29 @@
+---
+- name: install and run elastic
+  hosts: master
+  become: yes
+
+  vars:
+    local_elasticsearch_directory: /opt/es
+    local_elasticsearch_cluster_name: demo-cluster
+
+  tasks:
+  - name: elastic configure for production
+    include_role:
+      name: elasticsearch
+      tasks_from: config.yml
+    vars:
+      elasticsearch_directory: "{{ local_elasticsearch_directory }}"
+      elasticsearch_cluster_name: "{{ local_elasticsearch_cluster_name }}"
+      elasticsearch_nodes: "{{ groups['master'] }}"
+      elasticsearch_elastic_java_opts: "-Xmx4g -Xms4g"
+      elasticsearch_config_template: es.cluster.yml
+
+  - name: restart elasticsearch
+    shell:
+      cmd: "{{ item }}"
+      chdir: "{{ local_elasticsearch_directory }}"
+    loop:
+      - docker-compose down
+      - docker-compose up -d
+...

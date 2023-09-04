@@ -1,0 +1,9 @@
+---
+- name: restart kibana
+  shell:
+    cmd: "{{ item }}"
+    chdir: "{{ kibana_directory }}"
+  loop:
+    - docker-compose down
+    - docker-compose up -d
+...

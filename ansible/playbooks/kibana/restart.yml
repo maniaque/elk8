@@ -1,0 +1,13 @@
+---
+- name: restart kibana
+  hosts: master
+  become: yes
+
+  tasks:
+  - name: restart kibana
+    include_role:
+      name: kibana
+      tasks_from: restart.yml
+    vars:
+      kibana_directory: /opt/kibana
+...

@@ -1,0 +1,12 @@
+---
+server:
+  name: {{ inventory_hostname }}
+  host: 0.0.0.0
+
+elasticsearch:
+  hosts:
+  {% for host in template_hosts %}
+  - {{ host }}
+  {% endfor -%}
+  serviceAccountToken: {{ template_token }}
+...

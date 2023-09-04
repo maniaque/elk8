@@ -1,0 +1,6 @@
+---
+kibana_image: maniaque/kibana:8.6.2
+kibana_directory: /tmp/kibana
+kibana_elasticsearch_urls: [ http://localhost:9200 ]
+kibana_token: none
+...

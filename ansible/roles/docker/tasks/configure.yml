@@ -1,0 +1,41 @@
+---
+- name: install packages
+  apt:
+    name:
+      - python3-requests
+    update_cache: yes
+
+- name: install pip for docker
+  pip:
+    name: docker
+
+- name: configure docker
+  copy:
+    content: |
+      {
+        "userland-proxy": false,
+        "log-driver": "json-file",
+        "log-opts": {
+          "max-size": "100m",
+          "max-file": "3"
+        }
+      }
+    dest: /etc/docker/daemon.json
+  notify: restart docker
+
+- name: force handler right now
+  meta: flush_handlers
+
+- name: enable docker autostart
+  systemd:
+    name: docker
+    enabled: yes
+    state: started
+
+- name: add users to docker group
+  user:
+    name: "{{ item }}"
+    append: yes
+    groups: docker
+  loop: "{{ docker_users }}"
+...

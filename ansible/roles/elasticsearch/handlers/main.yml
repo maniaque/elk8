@@ -1,0 +1,12 @@
+---
+- name: restart elasticsearch
+  shell:
+    cmd: "{{ item }}"
+    chdir: "{{ elasticsearch_directory }}"
+  loop:
+    - docker-compose down
+    - docker-compose up -d
+
+- name: apply sysctl
+  shell: sysctl --system
+...

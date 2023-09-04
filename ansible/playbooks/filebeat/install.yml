@@ -1,0 +1,23 @@
+---
+- name: install filebeat
+  hosts: master
+  become: yes
+
+  vars:
+    elastic_servers: []
+
+  tasks:
+  - name: create server list
+    set_fact:
+      elastic_servers: "{{ elastic_servers + [ hostvars[item].internal_ip + ':9200' ] }}"
+    loop: "{{ groups['master'] }}"
+    delegate_to: localhost
+
+  - name: filebeat role
+    include_role:
+      name: filebeat
+    vars:
+      filebeat_elastic_targets: "{{ elastic_servers }}"
+      filebeat_key_id: ZVfFVooBipTwBRqxkLDL
+      filebeat_key_key: lsGBeYmqRr203QEpE-HtpQ
+...

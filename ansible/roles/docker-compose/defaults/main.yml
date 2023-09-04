@@ -1,0 +1,5 @@
+---
+docker_compose_version: 1.29.2 
+docker_compose_os: linux
+docker_compose_arch: x86_64
+...

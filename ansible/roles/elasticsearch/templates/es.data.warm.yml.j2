@@ -1,0 +1,25 @@
+---
+network.host: 0.0.0.0
+
+cluster:
+  name: {{ template_cluster_name }}
+  max_shards_per_node: 5000
+
+node.name: {{ template_node_name }}
+
+node.roles: [ data_warm ]
+
+discovery.seed_hosts:
+{% for node in template_nodes %}
+- {{ node }}
+{% endfor %}
+
+xpack.security:
+  enabled: true
+  enrollment.enabled: true
+  transport.ssl:
+    enabled: true
+    certificate_authorities: ca.crt
+    key: host.key
+    certificate: host.crt
+...

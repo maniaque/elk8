@@ -1,0 +1,7 @@
+---
+filebeat_version: 8.6.2
+filebeat_template: filebeat.yml.j2
+filebeat_elastic_targets: [ "localhost:9200" ]
+filebeat_key_id: none
+filebeat_key_key: none
+...

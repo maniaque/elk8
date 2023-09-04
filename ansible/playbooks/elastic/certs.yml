@@ -1,0 +1,32 @@
+---
+- name: copy certs to master nodes
+  hosts: master,!elastic-03,!elastic-04
+  become: yes
+
+  vars:
+    local_elasticsearch_directory: /opt/es
+
+  tasks:
+  - name: copy ca
+    copy:
+      src: "../../keys/ca.crt"
+      dest: "{{ local_elasticsearch_directory }}/ca.crt"
+
+  - name: copy key
+    copy:
+      src: "../../keys/{{ inventory_hostname }}.key"
+      dest: "{{ local_elasticsearch_directory }}/host.key"
+
+  - name: copy crt
+    copy:
+      src: "../../keys/{{ inventory_hostname }}.crt"
+      dest: "{{ local_elasticsearch_directory }}/host.crt"
+
+  - name: restart elasticsearch
+    shell:
+      cmd: "{{ item }}"
+      chdir: "{{ local_elasticsearch_directory }}"
+    loop:
+      - docker-compose down
+      - docker-compose up -d
+...

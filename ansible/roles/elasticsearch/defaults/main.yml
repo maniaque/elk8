@@ -1,0 +1,14 @@
+---
+elasticsearch_image: maniaque/elasticsearch:8.6.2
+
+elasticsearch_directory: /tmp/es
+elasticsearch_directory_data: "{{ elasticsearch_directory }}/data"
+
+elasticsearch_cluster_name: docker-cluster
+elasticsearch_nodes: []
+elasticsearch_config_template: es.cluster.yml
+
+elasticsearch_elastic_java_opts: "-Xmx256m -Xms256m"
+elasticsearch_elastic_password: abcd2557-486c-471b-873c-aca59c1a4f88
+elasticsearch_kibana_port: 80
+...

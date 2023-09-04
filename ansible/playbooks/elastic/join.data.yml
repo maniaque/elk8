@@ -1,0 +1,64 @@
+---
+- name: install and run elastic
+  hosts: elastic-04
+  become: yes
+
+  vars:
+    local_elasticsearch_directory: /opt/es
+    local_elasticsearch_cluster_name: demo-cluster
+
+  tasks:
+  - name: install docker
+    include_role:
+      name: docker
+      tasks_from: repo.yml
+    vars:
+      docker_repo: https://download.docker.com/linux/ubuntu
+      docker_distribution: focal
+      docker_users: [ ubuntu ]
+
+  - name: install docker-compose
+    include_role:
+      name: docker-compose
+  
+  - name: elastic prepare
+    include_role:
+      name: elasticsearch
+      tasks_from: prepare.yml
+    vars:
+      elasticsearch_directory: "{{ local_elasticsearch_directory }}"
+
+  - name: copy ca
+    copy:
+      src: "../../keys/ca.crt"
+      dest: "{{ local_elasticsearch_directory }}/ca.crt"
+
+  - name: copy key
+    copy:
+      src: "../../keys/{{ inventory_hostname }}.key"
+      dest: "{{ local_elasticsearch_directory }}/host.key"
+
+  - name: copy crt
+    copy:
+      src: "../../keys/{{ inventory_hostname }}.crt"
+      dest: "{{ local_elasticsearch_directory }}/host.crt"
+
+  - name: elastic configure for production
+    include_role:
+      name: elasticsearch
+      tasks_from: config.yml
+    vars:
+      elasticsearch_directory: "{{ local_elasticsearch_directory }}"
+      elasticsearch_cluster_name: "{{ local_elasticsearch_cluster_name }}"
+      elasticsearch_nodes: "{{ groups['master'] }}"
+      elasticsearch_elastic_java_opts: "-Xmx4g -Xms4g"
+      elasticsearch_config_template: es.data.cold.yml
+
+  - name: start elasticsearch
+    shell:
+      cmd: "{{ item }}"
+      chdir: "{{ local_elasticsearch_directory }}"
+    loop:
+      - docker-compose down
+      - docker-compose up -d
+...

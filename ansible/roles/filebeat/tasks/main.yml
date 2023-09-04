@@ -1,0 +1,27 @@
+---
+- name: install filebeat
+  apt:
+    # deb: "https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-{{ filebeat_version }}-amd64.deb"
+    deb: "https://storage.yandexcloud.net/elk-files/filebeat-{{ filebeat_version }}-amd64.deb"
+
+- name: create config
+  template:
+    src: templates/{{ filebeat_template }}
+    dest: /etc/filebeat/filebeat.yml
+  vars:
+    template_targets: "{{ filebeat_elastic_targets }}"
+    template_key: "{{ filebeat_key_id }}:{{ filebeat_key_key }}"
+  notify: restart filebeat
+
+- name: update config for rsyslog
+  template:
+    src: templates/01-filebeat.conf.j2
+    dest: /etc/rsyslog.d/01-filebeat.conf
+  notify: restart rsyslog
+
+- name: ensure filebeat started
+  systemd:
+    name: filebeat
+    state: started
+    enabled: yes
+...
